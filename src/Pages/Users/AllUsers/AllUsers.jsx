@@ -20,6 +20,7 @@ const AllUsers = () => {
   const [grades, setGrades] = useState([]);
   const [facultiesLoading, setFacultiesLoading] = useState(false);
   const [gradesLoading, setGradesLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [facultiesError, setFacultiesError] = useState(null);
   const [gradesError, setGradesError] = useState(null);
   const token = useSelector((state) => state.auth.user.token);
@@ -43,9 +44,9 @@ const AllUsers = () => {
 
   const authHeaders = token
     ? {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      }
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    }
     : { "Content-Type": "application/json" };
 
   const apiRequest = async (url, options) => {
@@ -81,14 +82,14 @@ const AllUsers = () => {
     } catch (err) {
       if (err.message.includes("404") && searchTerm) {
         setError("Bu Universitet ID bo‘yicha foydalanuvchilar topilmadi.");
-        setData([]);
+        // setData([]);
       } else {
         setError(
           err.message.includes("404")
             ? "Foydalanuvchilar ro'yxati topilmadi. Iltimos, API manzilini tekshiring."
             : err.message.includes("401")
-            ? "Avtorizatsiya xatosi. Tokenni tekshiring."
-            : `Ma'lumotlarni yuklashda xatolik: ${err.message}`
+              ? "Avtorizatsiya xatosi. Tokenni tekshiring."
+              : `Ma'lumotlarni yuklashda xatolik: ${err.message}`
         );
         setData([]);
       }
@@ -110,8 +111,8 @@ const AllUsers = () => {
       const facultiesArray = Array.isArray(facultiesResult.results)
         ? facultiesResult.results
         : Array.isArray(facultiesResult)
-        ? facultiesResult
-        : [];
+          ? facultiesResult
+          : [];
       console.log("Fetched Faculties:", facultiesArray);
       setFaculties(facultiesArray);
     } catch (err) {
@@ -128,8 +129,8 @@ const AllUsers = () => {
       const gradesArray = Array.isArray(gradesResult.results)
         ? gradesResult.results
         : Array.isArray(gradesResult)
-        ? gradesResult
-        : [];
+          ? gradesResult
+          : [];
       console.log("Fetched Grades:", gradesArray);
       setGrades(gradesArray);
     } catch (err) {
@@ -142,7 +143,7 @@ const AllUsers = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers, searchTerm]);
 
   useEffect(() => {
     if (modalState.isAddOpen || modalState.isEditOpen) {
@@ -255,13 +256,19 @@ const AllUsers = () => {
       closeModal();
     } catch (err) {
       console.error("Add user error:", err);
-      let errorMessage = `Qo‘shishda xatolik: ${err.message}`;
-      if (err.message.includes("400")) {
-        errorMessage = "Ma'lumotlar noto‘g‘ri. Iltimos, kiritilgan ma'lumotlarni tekshiring.";
-      } else if (err.message.includes("409")) {
-        errorMessage = "Bu Universitet ID yoki email allaqachon ishlatilgan.";
+      try {
+        const errorJson = JSON.parse(err.message.split(" - ")[1]);
+        setFieldErrors(errorJson);
+    
+        // 🔔 qo‘shimcha: umumiy xabarni toast orqali ham ko‘rsatamiz
+        const firstKey = Object.keys(errorJson)[0];
+        const firstMessage = errorJson[firstKey]?.[0];
+        if (firstMessage) {
+          toast.error(firstMessage);
+        }
+      } catch {
+        toast.error("Qo‘shishda xatolik: " + err.message);
       }
-      toast.error(errorMessage);
     } finally {
       setModalState((prev) => ({ ...prev, isActionLoading: false }));
     }
@@ -611,8 +618,8 @@ const AllUsers = () => {
               {modalState.isAddOpen
                 ? "Yangi foydalanuvchi qo‘shish"
                 : modalState.isEditOpen
-                ? "Foydalanuvchini tahrirlash"
-                : "Coin qo‘shish"}
+                  ? "Foydalanuvchini tahrirlash"
+                  : "Coin qo‘shish"}
             </motion.h3>
             <div className="space-y-4">
               {modalState.isCoinOpen ? (

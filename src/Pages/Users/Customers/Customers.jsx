@@ -240,7 +240,7 @@ const Shop = () => {
                         : "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-2.jpg"
                     }
                     alt={product.name || "Mahsulot"}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-56 object-cover"
                     onError={(e) => {
                       e.target.src = "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-2.jpg";
                     }}

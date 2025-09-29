@@ -17,8 +17,8 @@ const CustomTable = ({
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table w-full border-collapse">
+    <div className="overflow-x-auto rounded-2xl">
+      <table className="table w-full border-collapse ">
         <thead>
           <tr>
             {columns.map((column) => (
